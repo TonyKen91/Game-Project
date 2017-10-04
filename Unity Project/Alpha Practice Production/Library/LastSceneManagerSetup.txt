@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/_Scenes/Wills Test Scene.unity
+- path: Assets/Antoines Stuff/Scenes/game3.unity
   isLoaded: 1
   isActive: 1
