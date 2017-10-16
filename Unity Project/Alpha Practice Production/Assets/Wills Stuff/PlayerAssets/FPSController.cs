@@ -8,38 +8,54 @@ using UnityStandardAssets.Characters.FirstPerson;
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour {
 
-    //variables
+    //public variables
+
+    //walking/sprinting variables
     [SerializeField] private bool m_walking = true;
     [SerializeField] private float m_WalkSpeed = 5.0f;
     [SerializeField] private float m_RunSpeed = 11.0f;
     [SerializeField] private float m_JumpSpeed = 10.0f;
+
+    //jumping/falling variables
     [SerializeField] private float m_StickToGroundForce = 20.0f;
     [SerializeField] private float m_GravityMultiplier = 2.0f;
     [SerializeField] private bool m_airControl = false;
     [SerializeField] private float m_fallDamageDistance = 2.0f;
+
+    //Looking/camera variables
     [SerializeField] private MouseLook m_MouseLook;
     [SerializeField] private bool m_UseFovKick;
     [SerializeField] private FOVKick m_FovKick = new FOVKick();
+
+    //health/stamina variables
     [SerializeField] private int m_maxHealth = 100;
     [SerializeField] private float m_maxStamina = 5;
     [SerializeField] private int m_curHealth;
     [SerializeField] private float m_curStamina;
 
-    private Camera m_Camera;
-    private bool m_Jump;
-    private float m_YRotation;
+
+    //private variables
+
+    //walking/sprinting variables
     private Vector2 m_Input;
     private Vector3 m_MoveDir = Vector3.zero;
-    private CharacterController m_CharacterController;
-    private CollisionFlags m_CollisionFlags;
-    private bool m_PreviouslyGrounded;
-    private Vector3 m_OriginalCameraPosition;
-    private float m_StepCycle;
-    private float m_NextStep;
-    private bool m_Jumping;
-    private float m_fallDistanceStart;
     private bool m_canSprint = true;
     private float m_sprintCooldown = 1.0f;
+
+    //jumping/falling variables
+    private bool m_Jump;
+    private bool m_PreviouslyGrounded;
+    private bool m_Jumping;
+    private float m_fallDistanceStart;
+
+    //looking/camera variables
+    private Camera m_Camera;
+    private float m_YRotation;
+
+    //collision variables
+    private CharacterController m_CharacterController;
+    private CollisionFlags m_CollisionFlags;
+
 
 
 
@@ -47,7 +63,6 @@ public class FPSController : MonoBehaviour {
     private void Start () {
         m_CharacterController = GetComponent<CharacterController>();
         m_Camera = Camera.main;
-        m_OriginalCameraPosition = m_Camera.transform.localPosition;
         m_FovKick.Setup(m_Camera);
         m_Jumping = false;
         m_MouseLook.Init(transform, m_Camera.transform);
@@ -124,15 +139,18 @@ public class FPSController : MonoBehaviour {
         //the player is not on the ground
         else
         {
+            //commence the jumping
             if (m_Jump)
             {
               m_Jump = false;
               m_Jumping = true;
-              m_fallDistanceStart = this.transform.position.y;
 
             }
 
+            //apply physics
             m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
+
+            //allow for control in the air
             if (m_airControl)
             {
                 m_MoveDir.x = desiredMove.x * speed;
@@ -144,30 +162,32 @@ public class FPSController : MonoBehaviour {
         m_MouseLook.UpdateCursorLock();
     }
 
-    //FIX THIS, SPRINT WILL NEVER ACTUALLY STOP
+    //Function to control the sprinting for the player
     private void SprintHandling()
     {
+        //if stamina is gone, make player start walking and disallow sprinting
         if (m_curStamina <= 0)
         {
             m_canSprint = false;
             m_walking = true;
         }
+        //if the sprint cooldown is finished, allow sprinting
         else if (m_sprintCooldown <= 0)
         {
             m_canSprint = true;
         }
+        //if player is sprinting, decrease stamina
         if (!m_walking)
         {
             m_curStamina -= Time.fixedDeltaTime;
             m_sprintCooldown = 2;
         }
+        //otherwise replenish stamina and sprint cooldown
         else if (m_curStamina < m_maxStamina)
         {
             m_curStamina += Time.fixedDeltaTime / 1.5f;
             m_sprintCooldown -= Time.deltaTime;
-
         }
-
     }
 
     //rotate the player
@@ -204,15 +224,6 @@ public class FPSController : MonoBehaviour {
 #if !MOBILE_INPUT
         // On standalone builds, walk/run speed is modified by a key press.
         // keep track of whether or not the character is walking or running
-        /*
-        if (m_canSprint == true && Input.GetKey(KeyCode.LeftShift))
-        {
-            m_walking = false;
-        } else
-        {
-            m_walking = true;
-        }
-        */
 
         if (m_canSprint)
         {
