@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 23252742199614184}
   - component: {fileID: 54020146100703454}
   - component: {fileID: 114620209134579924}
+  - component: {fileID: 114788899608801266}
   m_Layer: 0
   m_Name: Robot
   m_TagString: Enemy
@@ -104,12 +105,24 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1689252835483018}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e2821d8a2a6ca3440ac20f529fe88b51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 4
+--- !u!114 &114788899608801266
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1689252835483018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bf4fc2d786d5c24f9bae8781bf2d8e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MaxSpeed: 10
 --- !u!135 &135518149062680682
 SphereCollider:
   m_ObjectHideFlags: 1

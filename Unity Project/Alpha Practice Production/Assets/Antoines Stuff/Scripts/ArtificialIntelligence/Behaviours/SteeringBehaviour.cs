@@ -9,6 +9,11 @@ public class SteeringBehaviour : IBehaviour {
 		
 	}
 
+    public void AddNewForce(ISteeringForce newForce)
+    {
+        m_forces.AddLast(newForce);
+    }
+
     // Update is called once per frame
     public void UpdateBehaviour(AgentActor agent)
     {

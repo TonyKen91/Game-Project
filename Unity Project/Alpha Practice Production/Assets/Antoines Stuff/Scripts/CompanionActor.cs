@@ -24,7 +24,7 @@ public class CompanionActor : MonoBehaviour
     void FixedUpdate()
     {
         Vector3 dirToPlayer;
-        dirToPlayer = player.transform.position - this.transform.position;
+        dirToPlayer = player.transform.position + new Vector3 (1, 1, 1)  - this.transform.position;
         dirToPlayer.Normalize();
 
         transform.position += dirToPlayer * player.OutputPlayerMovement().magnitude * Time.fixedDeltaTime;

@@ -40,10 +40,7 @@ public class AgentActor : MonoBehaviour {
             behaviour.UpdateBehaviour(this);
 
         m_velocity += m_force * Time.fixedDeltaTime;
-
         m_position += m_velocity * Time.fixedDeltaTime;
-
-
     }
 
     public void AddForce(Vector3 force)
