@@ -20,7 +20,7 @@ public class FPSController : MonoBehaviour {
     [SerializeField] private float m_StickToGroundForce = 20.0f;
     [SerializeField] private float m_GravityMultiplier = 2.0f;
     [SerializeField] private bool m_airControl = false;
-    [SerializeField] private float m_fallDamageDistance = 2.0f;
+    [SerializeField] private float m_maxFallVel = 4.0f;
 
     //Looking/camera variables
     [SerializeField] private MouseLook m_MouseLook;
@@ -46,7 +46,7 @@ public class FPSController : MonoBehaviour {
     private bool m_Jump;
     private bool m_PreviouslyGrounded;
     private bool m_Jumping;
-    private float m_fallDistanceStart;
+    Vector3 m_lastPos = Vector3.zero;
 
     //looking/camera variables
     private Camera m_Camera;
@@ -68,11 +68,12 @@ public class FPSController : MonoBehaviour {
         m_MouseLook.Init(transform, m_Camera.transform);
         m_curHealth = m_maxHealth;
         m_curStamina = m_maxStamina;
+
     }
 	
 	// Update is called once per frame
 	void Update () {
-
+        
         RotateView();
         // the jump state needs to read here to make sure it is not missed
         
@@ -87,12 +88,27 @@ public class FPSController : MonoBehaviour {
         {
             m_MoveDir.y = 0f;
             m_Jumping = false;
-            //do the fall damage here i think?
-            float distance = m_fallDistanceStart - m_fallDamageDistance;
-            if (this.transform.position.y <= distance)
+
+            //fall damage
+
+            float velocity = (this.transform.position - m_lastPos).magnitude / Time.deltaTime;
+
+            Debug.Log(velocity);
+            if (velocity >= m_maxFallVel)
             {
-                m_curHealth -= (int)(distance * 3);
+
+                Debug.Log("take damage now");
             }
+
+            /*
+            float yVel = m_CharacterController.velocity.y;
+            if (yVel <= -m_maxFallVel)
+            {
+                m_curHealth -= (int)(yVel * -0.5f);
+            }
+            */
+
+    
         }
         //if player is not grounded, not jumping but was grounded last frame
         if (!m_CharacterController.isGrounded && !m_Jumping && m_PreviouslyGrounded)
@@ -102,6 +118,7 @@ public class FPSController : MonoBehaviour {
         }
 
         m_PreviouslyGrounded = m_CharacterController.isGrounded;
+        m_lastPos = this.transform.position;
     }
 
     //fixed update, otherwise known as physics update
@@ -109,6 +126,7 @@ public class FPSController : MonoBehaviour {
     {
         float speed;
         GetInput(out speed);
+        m_lastPos = this.transform.position;
         SprintHandling();
         // always move along the camera forward as it is the direction that it being aimed at
         Vector3 desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
@@ -131,7 +149,7 @@ public class FPSController : MonoBehaviour {
             if (m_Jump)
             {
                 m_MoveDir.y = m_JumpSpeed;
-                m_fallDistanceStart = this.transform.position.y;
+               // m_fallDistanceStart = this.transform.position.y;
                 m_Jump = false;
                 m_Jumping = true;
             }
