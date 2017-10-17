@@ -17,8 +17,6 @@ public class FPSController : MonoBehaviour {
     [SerializeField] private float m_JumpSpeed = 10.0f;
 
     //jumping/falling variables
-    [SerializeField] private float m_StickToGroundForce = 20.0f;
-    [SerializeField] private float m_GravityMultiplier = 2.0f;
     [SerializeField] private bool m_airControl = false;
     [SerializeField] private float m_maxFallVel = 4.0f;
 
@@ -47,6 +45,8 @@ public class FPSController : MonoBehaviour {
     private bool m_PreviouslyGrounded;
     private bool m_Jumping;
     Vector3 m_lastPos = Vector3.zero;
+    private float m_StickToGroundForce = 20.0f;
+    private float m_GravityMultiplier = 2.0f;
 
     //looking/camera variables
     private Camera m_Camera;
