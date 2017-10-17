@@ -75,50 +75,7 @@ public class FPSController : MonoBehaviour {
 	void Update () {
         
         RotateView();
-        // the jump state needs to read here to make sure it is not missed
-        
-        //input if player wants to jump
-        if (!m_Jump)
-        {
-            m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
-        }
-
-        //if player was not on the ground last frame and is currently grounded
-        if (!m_PreviouslyGrounded && m_CharacterController.isGrounded)
-        {
-            m_MoveDir.y = 0f;
-            m_Jumping = false;
-
-            //fall damage
-
-            float velocity = (this.transform.position - m_lastPos).magnitude / Time.deltaTime;
-
-            Debug.Log(velocity);
-            if (velocity >= m_maxFallVel)
-            {
-
-                Debug.Log("take damage now");
-            }
-
-            /*
-            float yVel = m_CharacterController.velocity.y;
-            if (yVel <= -m_maxFallVel)
-            {
-                m_curHealth -= (int)(yVel * -0.5f);
-            }
-            */
-
-    
-        }
-        //if player is not grounded, not jumping but was grounded last frame
-        if (!m_CharacterController.isGrounded && !m_Jumping && m_PreviouslyGrounded)
-        {
-            m_MoveDir.y = 0f;
-            m_Jumping = true;
-        }
-
-        m_PreviouslyGrounded = m_CharacterController.isGrounded;
-        m_lastPos = this.transform.position;
+        JumpHandling();
     }
 
     //fixed update, otherwise known as physics update
@@ -167,6 +124,7 @@ public class FPSController : MonoBehaviour {
 
             //apply physics
             m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
+            //Vector3 gravity = new 
 
             //allow for control in the air
             if (m_airControl)
@@ -175,8 +133,12 @@ public class FPSController : MonoBehaviour {
                 m_MoveDir.z = desiredMove.z * speed;
             }
         }
-        m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
 
+               
+        m_PreviouslyGrounded = m_CharacterController.isGrounded;
+
+        m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
+        m_lastPos = this.transform.position;
         m_MouseLook.UpdateCursorLock();
     }
 
@@ -206,6 +168,50 @@ public class FPSController : MonoBehaviour {
             m_curStamina += Time.fixedDeltaTime / 1.5f;
             m_sprintCooldown -= Time.deltaTime;
         }
+    }
+
+    private void JumpHandling()
+    {
+
+        //input if player wants to jump
+        if (!m_Jump)
+        {
+            m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
+        }        
+
+        //if player was not on the ground last frame and is currently grounded
+        if (!m_PreviouslyGrounded && m_CharacterController.isGrounded)
+        {
+
+
+            Debug.Log(m_MoveDir.y);
+            if (m_MoveDir.y <= -m_maxFallVel)
+            {
+                m_curHealth -= (int)(m_MoveDir.y * -0.8f);
+            }
+
+            m_MoveDir.y = 0f;
+            m_Jumping = false;
+
+            //fall damage
+            /*
+            float velocity = (this.transform.position - m_lastPos).magnitude / Time.deltaTime;
+
+            Debug.Log(velocity);
+            if (velocity >= m_maxFallVel)
+            {
+
+                Debug.Log("take damage now");
+            }
+            */
+        }
+        //if player is not grounded, not jumping but was grounded last frame
+        if (!m_CharacterController.isGrounded && !m_Jumping && m_PreviouslyGrounded)
+        {
+            m_MoveDir.y = 0f;
+            m_Jumping = true;
+        }
+
     }
 
     //rotate the player
