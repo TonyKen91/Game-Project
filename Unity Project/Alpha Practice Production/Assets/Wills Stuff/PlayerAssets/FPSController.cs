@@ -15,10 +15,11 @@ public class FPSController : MonoBehaviour {
     [SerializeField] private float m_WalkSpeed = 5.0f;
     [SerializeField] private float m_RunSpeed = 11.0f;
     [SerializeField] private float m_JumpSpeed = 10.0f;
+    [SerializeField] private float m_BoostSpeed = 20.0f;
 
     //jumping/falling variables
     [SerializeField] private bool m_airControl = false;
-    [SerializeField] private float m_maxFallVel = 4.0f;
+    [SerializeField] private float m_maxFallVel;
 
     //Looking/camera variables
     [SerializeField] private MouseLook m_MouseLook;
@@ -41,12 +42,14 @@ public class FPSController : MonoBehaviour {
     private float m_sprintCooldown = 1.0f;
 
     //jumping/falling variables
-    private bool m_Jump;
+    private bool m_canJump;
     private bool m_PreviouslyGrounded;
-    private bool m_Jumping;
-    Vector3 m_lastPos = Vector3.zero;
+    private bool m_Airborne;
     private float m_StickToGroundForce = 20.0f;
     private float m_GravityMultiplier = 2.0f;
+    private bool m_canBoost = true;
+    private bool m_boosting = false;
+
 
     //looking/camera variables
     private Camera m_Camera;
@@ -64,7 +67,7 @@ public class FPSController : MonoBehaviour {
         m_CharacterController = GetComponent<CharacterController>();
         m_Camera = Camera.main;
         m_FovKick.Setup(m_Camera);
-        m_Jumping = false;
+        m_Airborne = false;
         m_MouseLook.Init(transform, m_Camera.transform);
         m_curHealth = m_maxHealth;
         m_curStamina = m_maxStamina;
@@ -83,7 +86,6 @@ public class FPSController : MonoBehaviour {
     {
         float speed;
         GetInput(out speed);
-        m_lastPos = this.transform.position;
         SprintHandling();
         // always move along the camera forward as it is the direction that it being aimed at
         Vector3 desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
@@ -102,29 +104,22 @@ public class FPSController : MonoBehaviour {
             m_MoveDir.y = -m_StickToGroundForce;
             m_MoveDir.x = desiredMove.x * speed;
             m_MoveDir.z = desiredMove.z * speed;
+            
             //if player has started to jump
-            if (m_Jump)
+            if (m_canJump)
             {
                 m_MoveDir.y = m_JumpSpeed;
-               // m_fallDistanceStart = this.transform.position.y;
-                m_Jump = false;
-                m_Jumping = true;
+                m_canJump = false;
+                m_Airborne = true;
+                m_canBoost = true;
             }
         }
         //the player is not on the ground
         else
         {
-            //commence the jumping
-            if (m_Jump)
-            {
-              m_Jump = false;
-              m_Jumping = true;
 
-            }
-
-            //apply physics
+            //apply gravity
             m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
-            //Vector3 gravity = new 
 
             //allow for control in the air
             if (m_airControl)
@@ -132,13 +127,17 @@ public class FPSController : MonoBehaviour {
                 m_MoveDir.x = desiredMove.x * speed;
                 m_MoveDir.z = desiredMove.z * speed;
             }
-        }
 
+            if (m_boosting)
+            {
+                m_boosting = false;
+                m_canBoost = false;
+                m_MoveDir.y = m_BoostSpeed;
+            }
+        }
                
         m_PreviouslyGrounded = m_CharacterController.isGrounded;
-
         m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
-        m_lastPos = this.transform.position;
         m_MouseLook.UpdateCursorLock();
     }
 
@@ -156,6 +155,7 @@ public class FPSController : MonoBehaviour {
         {
             m_canSprint = true;
         }
+
         //if player is sprinting, decrease stamina
         if (!m_walking)
         {
@@ -172,44 +172,55 @@ public class FPSController : MonoBehaviour {
 
     private void JumpHandling()
     {
-
         //input if player wants to jump
-        if (!m_Jump)
+        if (!m_canJump && !m_Airborne)
         {
-            m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
-        }        
+            m_canJump = CrossPlatformInputManager.GetButtonDown("Jump");
+        }
+        if (m_Airborne && m_canBoost)
+        {
+            m_boosting = CrossPlatformInputManager.GetButtonDown("Jump");
+        }
 
         //if player was not on the ground last frame and is currently grounded
         if (!m_PreviouslyGrounded && m_CharacterController.isGrounded)
         {
-
-
-            Debug.Log(m_MoveDir.y);
-            if (m_MoveDir.y <= -m_maxFallVel)
+            float yVel = m_MoveDir.y;
+            if (yVel <= -m_maxFallVel)
             {
-                m_curHealth -= (int)(m_MoveDir.y * -0.8f);
+                Debug.Log(yVel);
+                if (yVel > -25)
+                {
+                    m_curHealth -= (int)(m_MoveDir.y * -0.7f);
+                    Debug.Log("0.8");
+                }
+                else if (yVel <= -25 && yVel > -30)
+                {
+                    m_curHealth -= (int)(m_MoveDir.y * -0.95f);
+                    Debug.Log("0.95");
+                }
+                else if (yVel <= -30 && yVel > -40)
+                {
+                    m_curHealth -= (int)(m_MoveDir.y * -1.5f);
+                    Debug.Log("1.5");
+                }
+                else if (yVel <= -40)
+                {
+                    m_curHealth -= (int)(m_MoveDir.y * -3f);
+                    Debug.Log("3");
+                }
+
             }
 
             m_MoveDir.y = 0f;
-            m_Jumping = false;
-
-            //fall damage
-            /*
-            float velocity = (this.transform.position - m_lastPos).magnitude / Time.deltaTime;
-
-            Debug.Log(velocity);
-            if (velocity >= m_maxFallVel)
-            {
-
-                Debug.Log("take damage now");
-            }
-            */
+            m_Airborne = false;
         }
+
         //if player is not grounded, not jumping but was grounded last frame
-        if (!m_CharacterController.isGrounded && !m_Jumping && m_PreviouslyGrounded)
+        if (!m_CharacterController.isGrounded && !m_Airborne && m_PreviouslyGrounded)
         {
             m_MoveDir.y = 0f;
-            m_Jumping = true;
+            m_Airborne = true;
         }
 
     }
@@ -243,12 +254,7 @@ public class FPSController : MonoBehaviour {
         float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
         float vertical = CrossPlatformInputManager.GetAxis("Vertical");
 
-        bool waswalking = m_walking;
-
-#if !MOBILE_INPUT
-        // On standalone builds, walk/run speed is modified by a key press.
-        // keep track of whether or not the character is walking or running
-
+        //if player can sprint, check if shift is pressed, else set player to be walking
         if (m_canSprint)
         {
             m_walking = !Input.GetKey(KeyCode.LeftShift);
@@ -256,13 +262,12 @@ public class FPSController : MonoBehaviour {
         {
             m_walking = true;
         }
-       
-#endif
+
         // set the desired speed to be walking or running
-        if (!m_Jumping)
+        if (!m_Airborne)
         {
             speed = m_walking ? m_WalkSpeed : m_RunSpeed;
-        } else
+        } else //set the speed while player is jumping to walkspeed
         {
             speed = m_WalkSpeed;
         }
@@ -272,14 +277,6 @@ public class FPSController : MonoBehaviour {
         if (m_Input.sqrMagnitude > 1)
         {
             m_Input.Normalize();
-        }
-
-        // handle speed change to give an fov kick
-        // only if the player is going to a run, is running and the fovkick is to be used
-        if (m_walking != waswalking && m_UseFovKick && m_CharacterController.velocity.sqrMagnitude > 0)
-        {
-            StopAllCoroutines();
-            StartCoroutine(!m_walking ? m_FovKick.FOVKickUp() : m_FovKick.FOVKickDown());
         }
     }
 
