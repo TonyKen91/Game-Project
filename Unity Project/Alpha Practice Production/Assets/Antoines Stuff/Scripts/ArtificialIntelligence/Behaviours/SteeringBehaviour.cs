@@ -5,21 +5,23 @@ using UnityEngine;
 public class SteeringBehaviour : IBehaviour {
 
 	// Use this for initialization
-	void Start () {
-		
-	}
+	public void Constructor () {
+        m_forces = new LinkedList<SteeringForce>();
+    }
 
-    public void AddNewForce(ISteeringForce newForce)
+    public void AddNewForce(SteeringForce newForce)
     {
+        // m_forces.AddLast(newForce);
         m_forces.AddLast(newForce);
     }
 
     // Update is called once per frame
-    public void UpdateBehaviour(AgentActor agent)
+    public BehaviourResult UpdateBehaviour(AgentActor agent)
     {
-        foreach(ISteeringForce force in m_forces)
+        foreach(SteeringForce force in m_forces)
             agent.AddForce(force.GetForce(agent));
+        return BehaviourResult.SUCCESS;
     }
 
-    private LinkedList<ISteeringForce> m_forces;
+    private LinkedList<SteeringForce> m_forces;
 }
