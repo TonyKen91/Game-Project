@@ -552,8 +552,7 @@ MonoBehaviour:
   m_WalkSpeed: 5
   m_RunSpeed: 11
   m_JumpSpeed: 10
-  m_StickToGroundForce: 20
-  m_GravityMultiplier: 2
+  m_BoostSpeed: 15
   m_airControl: 1
   m_maxFallVel: 20
   m_MouseLook:

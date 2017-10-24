@@ -2,8 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BehaviourResult
+{
+    SUCCESS,
+    FAILURE
+}
+
+
 public interface IBehaviour {
 
-    void UpdateBehaviour(AgentActor agent);
+    BehaviourResult UpdateBehaviour(AgentActor agent);
 
 }
