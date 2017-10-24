@@ -22,7 +22,7 @@ public class Player : MonoBehaviour {
         healthTxt.text = ("Health: " + health);
         hungerTxt.text = ("Hunger: " + hunger);
         hydrationTxt.text = ("Hydration: " + hydration);
-
+         
         Depleation();
     }
 

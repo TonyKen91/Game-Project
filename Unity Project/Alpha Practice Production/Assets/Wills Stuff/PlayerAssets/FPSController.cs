@@ -7,11 +7,14 @@ using UnityEngine.UI;
 using UnityStandardAssets.Characters.FirstPerson;
 
 [RequireComponent(typeof(CharacterController))]
-public class FPSController : MonoBehaviour {
+public class FPSController : MonoBehaviour
+{
 
     //public variables
     public Slider m_healthSlider;
     public Slider m_staminaSlider;
+    public Slider m_hungerSlider;
+    public Slider m_thirstSlider;
 
 
     //Serialized Fields, private variables that can be edited in the inspector
@@ -29,16 +32,23 @@ public class FPSController : MonoBehaviour {
     //Looking/camera variables
     [SerializeField] private MouseLook m_MouseLook;
     [SerializeField] private bool m_UseFovKick;
-    [SerializeField] private FOVKick m_FovKick = new FOVKick();
 
     //health/stamina variables
     [SerializeField] private int m_maxHealth = 100;
     [SerializeField] private float m_maxStamina = 5;
-    [SerializeField] private int m_curHealth;
-    [SerializeField] private float m_curStamina;
-
+    [SerializeField] private float m_maxHunger = 100;
+    [SerializeField] private float m_maxThirst = 100;
+    [SerializeField] private float m_statDepletionRate = 15;
 
     //private variables
+
+    //health/stamina variables
+    private int m_curHealth;
+    private float m_curStamina;
+    private float m_curHunger;
+    private float m_curThirst;
+    private float m_statTimer;
+
 
     //walking/sprinting variables
     private Vector2 m_Input;
@@ -68,20 +78,24 @@ public class FPSController : MonoBehaviour {
 
 
     // Use this for initialization
-    private void Start () {
+    private void Start()
+    {
         m_CharacterController = GetComponent<CharacterController>();
         m_Camera = Camera.main;
-        m_FovKick.Setup(m_Camera);
         m_Airborne = false;
         m_MouseLook.Init(transform, m_Camera.transform);
         m_curHealth = m_maxHealth;
         m_curStamina = m_maxStamina;
+        m_curHunger = m_maxHunger;
+        m_curThirst = m_maxThirst;
+        m_statTimer = 0.0f;
 
     }
-	
-	// Update is called once per frame
-	void Update () {
-        
+
+    // Update is called once per frame
+    void Update()
+    {
+        PlayerStatHandler();
         RotateView();
         JumpHandling();
     }
@@ -109,7 +123,7 @@ public class FPSController : MonoBehaviour {
             m_MoveDir.y = -m_StickToGroundForce;
             m_MoveDir.x = desiredMove.x * speed;
             m_MoveDir.z = desiredMove.z * speed;
-            
+
             //if player has started to jump
             if (m_canJump)
             {
@@ -140,7 +154,7 @@ public class FPSController : MonoBehaviour {
                 m_MoveDir.y = m_BoostSpeed;
             }
         }
-               
+
         m_PreviouslyGrounded = m_CharacterController.isGrounded;
         m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
         m_MouseLook.UpdateCursorLock();
@@ -184,11 +198,11 @@ public class FPSController : MonoBehaviour {
         //input if player wants to jump
         if (!m_canJump && !m_Airborne)
         {
-            m_canJump = CrossPlatformInputManager.GetButtonDown("Jump");
+            m_canJump = Input.GetButtonDown("Jump");
         }
         if (m_Airborne && m_canBoost)
         {
-            m_boosting = CrossPlatformInputManager.GetButtonDown("Jump");
+            m_boosting = Input.GetButtonDown("Jump");
         }
 
         //if player was not on the ground last frame and is currently grounded
@@ -230,9 +244,32 @@ public class FPSController : MonoBehaviour {
         {
             m_MoveDir.y = 0f;
             m_Airborne = true;
+            m_canBoost = true;
         }
 
     }
+
+    private void PlayerStatHandler()
+    {
+        m_statTimer += Time.deltaTime;
+
+        if (m_statTimer >= m_statDepletionRate)
+        {
+            if (m_curHunger > 0)
+            {
+                m_curHunger -= 1;
+                m_hungerSlider.value = m_curHunger;
+            }
+            if (m_curThirst > 0)
+            {
+                m_curThirst -= 1;
+                m_thirstSlider.value = m_curThirst;
+            }
+            m_statTimer = 0;
+           
+        }
+    }
+
 
     //rotate the player
     private void RotateView()
@@ -260,14 +297,15 @@ public class FPSController : MonoBehaviour {
     private void GetInput(out float speed)
     {
         // Read input
-        float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
-        float vertical = CrossPlatformInputManager.GetAxis("Vertical");
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
 
         //if player can sprint, check if shift is pressed, else set player to be walking
         if (m_canSprint)
         {
             m_walking = !Input.GetKey(KeyCode.LeftShift);
-        } else
+        }
+        else
         {
             m_walking = true;
         }
@@ -276,7 +314,8 @@ public class FPSController : MonoBehaviour {
         if (!m_Airborne)
         {
             speed = m_walking ? m_WalkSpeed : m_RunSpeed;
-        } else //set the speed while player is jumping to walkspeed
+        }
+        else //set the speed while player is jumping to walkspeed
         {
             speed = m_WalkSpeed;
         }
@@ -295,17 +334,15 @@ public class FPSController : MonoBehaviour {
         return m_MoveDir;
     }
 
-<<<<<<< HEAD
     public void ApplyDamage(int dmg)
     {
 
         this.m_curHealth -= dmg;
-        if (m_curHealth <0)
+        if (m_curHealth < 0)
         {
             m_curHealth = 0;
         }
         m_healthSlider.value = m_curHealth;
     }
-=======
->>>>>>> 338553752050ef8a87a10b35cc3680b4f5c680a5
+
 }
