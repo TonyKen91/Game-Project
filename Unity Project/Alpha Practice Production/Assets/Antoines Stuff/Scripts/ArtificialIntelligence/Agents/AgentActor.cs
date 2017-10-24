@@ -31,16 +31,19 @@ public class AgentActor : MonoBehaviour {
     // Update is called once per frame
     void FixedUpdate()
     {
-        UpdateBehaviours();
+        //UpdateBehaviours();
             
     }
     protected void UpdateBehaviours()
     { 
-        foreach (var behaviour in m_behaviours)
+        m_force = Vector3.zero;
+        foreach (IBehaviour behaviour in m_behaviours)
+        {
             behaviour.UpdateBehaviour(this);
+        }
 
         m_velocity += m_force * Time.fixedDeltaTime;
-        m_position += m_velocity * Time.fixedDeltaTime;
+        transform.position += m_velocity * Time.fixedDeltaTime;
     }
 
     public void AddForce(Vector3 force)

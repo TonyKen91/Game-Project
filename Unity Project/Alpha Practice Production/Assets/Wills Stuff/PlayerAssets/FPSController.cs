@@ -295,6 +295,7 @@ public class FPSController : MonoBehaviour {
         return m_MoveDir;
     }
 
+<<<<<<< HEAD
     public void ApplyDamage(int dmg)
     {
 
@@ -305,4 +306,6 @@ public class FPSController : MonoBehaviour {
         }
         m_healthSlider.value = m_curHealth;
     }
+=======
+>>>>>>> 338553752050ef8a87a10b35cc3680b4f5c680a5
 }

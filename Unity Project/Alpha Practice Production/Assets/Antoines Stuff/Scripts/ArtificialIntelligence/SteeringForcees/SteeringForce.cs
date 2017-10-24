@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ISteeringForce
+public abstract class SteeringForce
 {
-    Vector3 GetForce(AgentActor agent);
+    public abstract Vector3 GetForce(AgentActor agent);
 }

@@ -6,22 +6,27 @@ public class EnemyRobot : AgentActor {
 
     //[SerializeField]
     private GameObject player;
-    private PlayerAgent playerScript;
+    private FPSController playerScript;
+    public SteeringBehaviour steering;
+    public SeekForce m_seekForce;
 
-	// Use this for initialization
-	void Start () {
-
-        player = FindObjectOfType<PlayerAgent>().gameObject;
-        playerScript = player.GetComponent<PlayerAgent>();
-        SeekForce m_seekForce = new SeekForce();
+    // Use this for initialization
+    void Start () {
+        m_behaviours = new List<IBehaviour>();
+        player = FindObjectOfType<FPSController>().gameObject;
+        playerScript = player.GetComponent<FPSController>();
+        m_seekForce = new SeekForce();
         m_seekForce.SetTarget(playerScript);
-
-        m_behaviours.Add(new SteeringBehaviour());
+        steering = new SteeringBehaviour();
+        steering.Constructor();
+        steering.AddNewForce(m_seekForce);
+        m_behaviours.Add(steering);
 
     }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
         UpdateBehaviours();
-	}
+
+    }
 }

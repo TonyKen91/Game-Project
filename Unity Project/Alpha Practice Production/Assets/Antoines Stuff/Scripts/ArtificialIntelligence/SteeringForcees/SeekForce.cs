@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.Characters.FirstPerson;
 
-public class SeekForce : ISteeringForce {
+public class SeekForce : SteeringForce {
 
+    
 
-    public Vector3 GetForce(AgentActor agent)
+    public override Vector3 GetForce(AgentActor agent)
     {
         //Vector3 dirToPlayer;
         //dirToPlayer = player.transform.position - this.transform.position;
@@ -14,16 +15,21 @@ public class SeekForce : ISteeringForce {
 
         //transform.position += dirToPlayer * player.Speed() * Time.fixedDeltaTime;
 
+        Transform targetTransform = m_target.gameObject.transform;
 
 
-        Vector3 force = (m_target.transform.position - agent.transform.position).normalized * agent.MaxSpeed;
+        Vector3 force = (targetTransform.position - agent.gameObject.transform.position).normalized * agent.MaxSpeed;
         return (force - agent.GetVelocity());
     }
 
-    public void SetTarget(AgentActor target)
+    public void SetTarget(FPSController target)
     {
         m_target = target;
     }
 
-    private AgentActor m_target;
+    public void Testing()
+    {
+    }
+
+    private FPSController m_target;
 }
