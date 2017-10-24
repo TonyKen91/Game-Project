@@ -28,6 +28,11 @@ public class FPSController : MonoBehaviour
     //jumping/falling variables
     [SerializeField] private bool m_airControl = false;
     [SerializeField] private float m_maxFallVel;
+    [SerializeField] private float m_boostMax = 3;
+    [SerializeField] private float m_boostCoolDown = 0;
+    [SerializeField] private float m_boostCoolDownMax;
+    [SerializeField] private float m_boostAmount;
+
 
     //Looking/camera variables
     [SerializeField] private MouseLook m_MouseLook;
@@ -55,6 +60,7 @@ public class FPSController : MonoBehaviour
     private Vector3 m_MoveDir = Vector3.zero;
     private bool m_canSprint = true;
     private float m_sprintCooldown = 1.0f;
+    private bool m_crouching;
 
     //jumping/falling variables
     private bool m_canJump;
@@ -89,7 +95,7 @@ public class FPSController : MonoBehaviour
         m_curHunger = m_maxHunger;
         m_curThirst = m_maxThirst;
         m_statTimer = 0.0f;
-
+        m_boostAmount = m_boostMax;
     }
 
     // Update is called once per frame
@@ -98,6 +104,7 @@ public class FPSController : MonoBehaviour
         PlayerStatHandler();
         RotateView();
         JumpHandling();
+        CrouchHandling();
     }
 
     //fixed update, otherwise known as physics update
@@ -132,14 +139,15 @@ public class FPSController : MonoBehaviour
                 m_Airborne = true;
                 m_canBoost = true;
             }
+
+            if (m_boostAmount <= m_boostMax && m_boostAmount >= 0 && m_boostCoolDown >= m_boostCoolDownMax)
+            {
+                m_boostAmount += Time.fixedDeltaTime * 0.5f;
+            }
         }
         //the player is not on the ground
         else
         {
-
-            //apply gravity
-            m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
-
             //allow for control in the air
             if (m_airControl)
             {
@@ -147,11 +155,43 @@ public class FPSController : MonoBehaviour
                 m_MoveDir.z = desiredMove.z * speed;
             }
 
-            if (m_boosting)
+
+            //apply gravity
+            m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
+
+            if (!m_boosting)
             {
+                if (m_boostCoolDown < m_boostCoolDownMax)
+                {
+
+                    m_boostCoolDown += Time.fixedDeltaTime;
+                    if (m_boostCoolDown >= m_boostCoolDownMax)
+                    {
+                        m_boostCoolDown = m_boostCoolDownMax;
+                    }
+                }
+            }
+
+            if (m_boosting && m_boostAmount > 0 && m_boostCoolDown >= m_boostCoolDownMax)
+            {
+
+                m_boostAmount -= Time.fixedDeltaTime;
+                if (m_boostAmount <= 0)
+                {
+                    m_boostAmount = 0.0f;
+                }
+                if (m_MoveDir.y <= 0)
+                {
+                    m_MoveDir.y -= m_MoveDir.y * 0.999999999f;
+                }
+                m_MoveDir.y += m_BoostSpeed;
+                
                 m_boosting = false;
-                m_canBoost = false;
-                m_MoveDir.y = m_BoostSpeed;
+                m_boostCoolDown = 0;
+            }
+            else if (m_boostAmount < m_boostMax && m_boostAmount >= 0 && m_boostCoolDown >= m_boostCoolDownMax)
+            {
+                m_boostAmount += Time.fixedDeltaTime * 0.5f;
             }
         }
 
@@ -163,6 +203,8 @@ public class FPSController : MonoBehaviour
     //Function to control the sprinting for the player
     private void SprintHandling()
     {
+
+
         //if stamina is gone, make player start walking and disallow sprinting
         if (m_curStamina <= 0)
         {
@@ -175,18 +217,23 @@ public class FPSController : MonoBehaviour
             m_canSprint = true;
         }
 
-        //if player is sprinting, decrease stamina
-        if (!m_walking)
+        if (!m_Airborne)
         {
-            m_curStamina -= Time.fixedDeltaTime;
-            m_sprintCooldown = 2;
+            //if player is sprinting, decrease stamina
+            if (!m_walking)
+            {
+                m_curStamina -= Time.fixedDeltaTime * 2;
+                m_sprintCooldown = 2;
+            }
+
+            //otherwise replenish stamina and sprint cooldown
+            if (m_curStamina < m_maxStamina)
+            {
+                m_curStamina += Time.fixedDeltaTime / 1.5f;
+                m_sprintCooldown -= Time.deltaTime;
+            }
         }
-        //otherwise replenish stamina and sprint cooldown
-        else if (m_curStamina < m_maxStamina)
-        {
-            m_curStamina += Time.fixedDeltaTime / 1.5f;
-            m_sprintCooldown -= Time.deltaTime;
-        }
+        
 
         float percentage = (m_curStamina / m_maxStamina) * 100;
         m_staminaSlider.value = percentage;
@@ -200,9 +247,10 @@ public class FPSController : MonoBehaviour
         {
             m_canJump = Input.GetButtonDown("Jump");
         }
-        if (m_Airborne && m_canBoost)
+        if (m_Airborne && m_boostCoolDown >= m_boostCoolDownMax)
         {
-            m_boosting = Input.GetButtonDown("Jump");
+            m_boosting = Input.GetButton("Jump");
+            m_boostCoolDown = 0.0f;
         }
 
         //if player was not on the ground last frame and is currently grounded
@@ -270,6 +318,39 @@ public class FPSController : MonoBehaviour
         }
     }
 
+    private void CrouchHandling()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftControl) && m_crouching == false)
+        {
+            m_crouching = true;
+            Vector3 tempScale = this.transform.localScale;
+            tempScale.y *= 0.5f;
+            this.transform.localScale = tempScale;
+
+        }
+        
+
+        if (m_crouching)
+        {
+            Ray crouchRay = new Ray(transform.position, transform.up);
+            RaycastHit info;
+            Physics.Raycast(crouchRay, out info);
+            if (info.collider == null)
+            {
+
+                if (!Input.GetKey(KeyCode.LeftControl))
+                {
+                    m_crouching = false;
+                    Vector3 tempScale = this.transform.localScale;
+                    tempScale.y *= 2f;
+                    this.transform.localScale = tempScale;
+                }
+            }
+           
+        }
+
+
+    }
 
     //rotate the player
     private void RotateView()
@@ -284,6 +365,11 @@ public class FPSController : MonoBehaviour
         if (m_CollisionFlags == CollisionFlags.Below)
         {
             return;
+        }
+
+        if (m_CollisionFlags == CollisionFlags.Above)
+        {
+            m_MoveDir.y = 0;
         }
 
         if (body == null || body.isKinematic)
