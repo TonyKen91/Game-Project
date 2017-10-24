@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityStandardAssets.Characters.FirstPerson;
 
 [RequireComponent(typeof(CharacterController))]
 public class FPSController : MonoBehaviour {
 
     //public variables
+    public Slider m_healthSlider;
+    public Slider m_staminaSlider;
 
+
+    //Serialized Fields, private variables that can be edited in the inspector
     //walking/sprinting variables
     [SerializeField] private bool m_walking = true;
     [SerializeField] private float m_WalkSpeed = 5.0f;
@@ -168,6 +173,10 @@ public class FPSController : MonoBehaviour {
             m_curStamina += Time.fixedDeltaTime / 1.5f;
             m_sprintCooldown -= Time.deltaTime;
         }
+
+        float percentage = (m_curStamina / m_maxStamina) * 100;
+        m_staminaSlider.value = percentage;
+
     }
 
     private void JumpHandling()
@@ -191,22 +200,22 @@ public class FPSController : MonoBehaviour {
                 Debug.Log(yVel);
                 if (yVel > -25)
                 {
-                    m_curHealth -= (int)(m_MoveDir.y * -0.7f);
+                    ApplyDamage((int)(yVel * -0.7f));
                     Debug.Log("0.8");
                 }
                 else if (yVel <= -25 && yVel > -30)
                 {
-                    m_curHealth -= (int)(m_MoveDir.y * -0.95f);
+                    ApplyDamage((int)(yVel * -0.95f));
                     Debug.Log("0.95");
                 }
                 else if (yVel <= -30 && yVel > -40)
                 {
-                    m_curHealth -= (int)(m_MoveDir.y * -1.5f);
+                    ApplyDamage((int)(yVel * -1.5f));
                     Debug.Log("1.5");
                 }
                 else if (yVel <= -40)
                 {
-                    m_curHealth -= (int)(m_MoveDir.y * -3f);
+                    ApplyDamage((int)(yVel * -3f));
                     Debug.Log("3");
                 }
 
@@ -286,4 +295,17 @@ public class FPSController : MonoBehaviour {
         return m_MoveDir;
     }
 
+<<<<<<< HEAD
+    public void ApplyDamage(int dmg)
+    {
+
+        this.m_curHealth -= dmg;
+        if (m_curHealth <0)
+        {
+            m_curHealth = 0;
+        }
+        m_healthSlider.value = m_curHealth;
+    }
+=======
+>>>>>>> 338553752050ef8a87a10b35cc3680b4f5c680a5
 }
