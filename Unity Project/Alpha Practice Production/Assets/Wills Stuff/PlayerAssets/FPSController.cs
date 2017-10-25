@@ -68,7 +68,6 @@ public class FPSController : MonoBehaviour
     private bool m_Airborne;
     private float m_StickToGroundForce = 20.0f;
     private float m_GravityMultiplier = 2.0f;
-    private bool m_canBoost = true;
     private bool m_boosting = false;
 
 
@@ -137,7 +136,6 @@ public class FPSController : MonoBehaviour
                 m_MoveDir.y = m_JumpSpeed;
                 m_canJump = false;
                 m_Airborne = true;
-                m_canBoost = true;
             }
 
             if (m_boostAmount <= m_boostMax && m_boostAmount >= 0 && m_boostCoolDown >= m_boostCoolDownMax)
@@ -155,44 +153,49 @@ public class FPSController : MonoBehaviour
                 m_MoveDir.z = desiredMove.z * speed;
             }
 
-
             //apply gravity
             m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
 
-            if (!m_boosting)
-            {
-                if (m_boostCoolDown < m_boostCoolDownMax)
-                {
-
-                    m_boostCoolDown += Time.fixedDeltaTime;
-                    if (m_boostCoolDown >= m_boostCoolDownMax)
-                    {
-                        m_boostCoolDown = m_boostCoolDownMax;
-                    }
-                }
-            }
-
+            
+            
+            //if boosting and boost amount is greater than 0 and the boost cool down is greater than or equal to the boost cool down maximum
             if (m_boosting && m_boostAmount > 0 && m_boostCoolDown >= m_boostCoolDownMax)
             {
-
                 m_boostAmount -= Time.fixedDeltaTime;
-                if (m_boostAmount <= 0)
+                if (m_boostAmount < 0)
                 {
                     m_boostAmount = 0.0f;
                 }
                 if (m_MoveDir.y <= 0)
                 {
-                    m_MoveDir.y -= m_MoveDir.y * 0.999999999f;
+                    m_MoveDir.y += -m_MoveDir.y * 0.05f;
                 }
                 m_MoveDir.y += m_BoostSpeed;
                 
-                m_boosting = false;
                 m_boostCoolDown = 0;
             }
             else if (m_boostAmount < m_boostMax && m_boostAmount >= 0 && m_boostCoolDown >= m_boostCoolDownMax)
             {
                 m_boostAmount += Time.fixedDeltaTime * 0.5f;
+
+                //if not boosting
+                if (!m_boosting)
+                {
+                    //apply gravity
+                    m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
+                    //if boost cool down is less than boost max
+                    if (m_boostCoolDown < m_boostCoolDownMax)
+                    {
+                        m_boostCoolDown += Time.fixedDeltaTime;
+                        //truncate the boost cool down
+                        if (m_boostCoolDown >= m_boostCoolDownMax)
+                        {
+                            m_boostCoolDown = m_boostCoolDownMax;
+                        }
+                    }
+                }
             }
+            m_boosting = false;
         }
 
         m_PreviouslyGrounded = m_CharacterController.isGrounded;
@@ -250,7 +253,7 @@ public class FPSController : MonoBehaviour
         if (m_Airborne && m_boostCoolDown >= m_boostCoolDownMax)
         {
             m_boosting = Input.GetButton("Jump");
-            m_boostCoolDown = 0.0f;
+            m_boostCoolDown = 1;
         }
 
         //if player was not on the ground last frame and is currently grounded
@@ -259,26 +262,21 @@ public class FPSController : MonoBehaviour
             float yVel = m_MoveDir.y;
             if (yVel <= -m_maxFallVel)
             {
-                Debug.Log(yVel);
                 if (yVel > -25)
                 {
                     ApplyDamage((int)(yVel * -0.7f));
-                    Debug.Log("0.8");
                 }
                 else if (yVel <= -25 && yVel > -30)
                 {
                     ApplyDamage((int)(yVel * -0.95f));
-                    Debug.Log("0.95");
                 }
                 else if (yVel <= -30 && yVel > -40)
                 {
                     ApplyDamage((int)(yVel * -1.5f));
-                    Debug.Log("1.5");
                 }
                 else if (yVel <= -40)
                 {
                     ApplyDamage((int)(yVel * -3f));
-                    Debug.Log("3");
                 }
 
             }
@@ -292,7 +290,6 @@ public class FPSController : MonoBehaviour
         {
             m_MoveDir.y = 0f;
             m_Airborne = true;
-            m_canBoost = true;
         }
 
     }
@@ -328,7 +325,6 @@ public class FPSController : MonoBehaviour
             this.transform.localScale = tempScale;
 
         }
-        
 
         if (m_crouching)
         {
