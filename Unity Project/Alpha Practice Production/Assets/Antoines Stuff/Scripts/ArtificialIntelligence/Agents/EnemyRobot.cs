@@ -20,12 +20,31 @@ public class EnemyRobot : AgentActor {
         playerScript = player.GetComponent<FPSController>();
 
 
-//-----------------------------------------------------------------
-// The Collision Avoidance Sequence
-        
+        //-----------------------------------------------------------------
+        // The Collision Avoidance Sequence
+
         // Set up the collsion avoidance force
 
 
+
+        ////-----------------------------------------------------------------
+        //// The Attack Sequence
+
+        //// Set up the attack behaviour
+        //ShootBehaviour m_attackBehaviour = new ShootBehaviour();
+
+
+        //// Set up condition for the attack sequence
+        //WithinRange attackCondition = new WithinRange();
+        //attackCondition.SetParameters(player, 5);
+
+        //// Set up attack sequence
+        //Sequence attackSequence = new Sequence();
+        //attackSequence.addBehaviour(attackCondition);
+        //attackSequence.addBehaviour(m_attackBehaviour);
+        
+        
+        
 //-----------------------------------------------------------------
 // The Chase Sequence
 
