@@ -14,15 +14,14 @@ public class SeekForce : SteeringForce {
         //dirToPlayer.Normalize();
 
         //transform.position += dirToPlayer * player.Speed() * Time.fixedDeltaTime;
+        // Vector3.Lerp works by lerping from first position to second position at third speed
 
-        Transform targetTransform = m_target.gameObject.transform;
-
-
-        Vector3 force = (targetTransform.position - agent.gameObject.transform.position).normalized * agent.MaxSpeed;
+        agent.gameObject.transform.LookAt(m_target.transform);
+        Vector3 force = (m_target.transform.position - agent.gameObject.transform.position).normalized * agent.MaxSpeed;
         return (force - agent.GetVelocity());
     }
 
-    public void SetTarget(FPSController target)
+    public void SetTarget(GameObject target)
     {
         m_target = target;
     }
@@ -31,5 +30,5 @@ public class SeekForce : SteeringForce {
     {
     }
 
-    private FPSController m_target;
+    private GameObject m_target;
 }

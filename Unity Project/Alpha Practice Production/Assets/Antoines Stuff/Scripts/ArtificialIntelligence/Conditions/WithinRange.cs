@@ -15,13 +15,15 @@ public class WithinRange : IBehaviour {
 
     public BehaviourResult UpdateBehaviour(AgentActor agent)
     {
-        if ((agent.transform.position - m_target.transform.position).magnitude <= m_range)
+
+        if ((agent.gameObject.transform.position - m_target.transform.position).sqrMagnitude <= m_range*m_range)
             return BehaviourResult.SUCCESS;
         return BehaviourResult.FAILURE;
     }
 
-    public void SetParameters(GameObject target, float range)
+    public void SetParameters(GameObject target/*Vector3 targetPosition*/, float range)
     {
+        //m_targetPosition = targetPosition;
         m_target = target;
         m_range = range;
     }

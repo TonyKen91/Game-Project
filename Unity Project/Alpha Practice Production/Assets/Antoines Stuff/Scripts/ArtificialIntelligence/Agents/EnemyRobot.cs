@@ -7,8 +7,8 @@ public class EnemyRobot : AgentActor {
     //[SerializeField]
     private GameObject player;
     private FPSController playerScript;
-    public SteeringBehaviour seekBehaviour;
-    public SeekForce m_seekForce;
+    private SteeringBehaviour seekBehaviour;
+    private SeekForce m_seekForce;
 
     // Use this for initialization
     void Start () {
@@ -19,9 +19,19 @@ public class EnemyRobot : AgentActor {
         player = FindObjectOfType<FPSController>().gameObject;
         playerScript = player.GetComponent<FPSController>();
 
+
+//-----------------------------------------------------------------
+// The Collision Avoidance Sequence
+        
+        // Set up the collsion avoidance force
+
+
+//-----------------------------------------------------------------
+// The Chase Sequence
+
         // Set up the seek force and seek force parameter
         m_seekForce = new SeekForce();
-        m_seekForce.SetTarget(playerScript);
+        m_seekForce.SetTarget(player);
         
         // Set up the seek behaviour
         seekBehaviour = new SteeringBehaviour();
@@ -37,14 +47,39 @@ public class EnemyRobot : AgentActor {
         chaseSequence.addBehaviour(chaseCondition);
         chaseSequence.addBehaviour(seekBehaviour);
 
-        // Add 
-        m_behaviours.Add(chaseSequence);
+
+
+//----------------------------------------------------------------
+// The Patrol Sequence
+
+        // Set up patrol behaviour
+        PatrolBehaviour patrol = new PatrolBehaviour();
+        patrol.StartUp();
+        patrol.SetPatrolPoints(new Vector3(20, 3, 12), new Vector3(-20, 3, 12));
+
+
+
+//----------------------------------------------------------------
+// The Main Selector
+
+        // Set up main selector
+        Selector mainSelector = new Selector();
+        mainSelector.addBehaviour(chaseSequence);
+        mainSelector.addBehaviour(patrol);
+
+
+
+        // Add all sequences to behaviour list
+        m_behaviours.Add(mainSelector);
+
+        // Setting the forward direction
+        transform.forward = new Vector3(0, 0, 1);
 
     }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
         UpdateBehaviours();
-
+        //transform.LookAt(player.transform);
     }
 }
