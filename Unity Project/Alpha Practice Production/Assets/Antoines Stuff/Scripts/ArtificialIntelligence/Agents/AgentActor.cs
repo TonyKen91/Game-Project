@@ -43,6 +43,7 @@ public class AgentActor : MonoBehaviour {
         }
 
         m_velocity += m_force * Time.fixedDeltaTime;
+        //transform.LookAt(m_velocity);
         transform.position += m_velocity * Time.fixedDeltaTime;
     }
 
