@@ -1264,7 +1264,7 @@ MonoBehaviour:
   m_maxFallVel: 20
   m_boostMax: 3
   m_boostCoolDown: 0
-  m_boostCoolDownMax: 0
+  m_boostCoolDownMax: 1
   m_boostAmount: 0
   m_MouseLook:
     XSensitivity: 2

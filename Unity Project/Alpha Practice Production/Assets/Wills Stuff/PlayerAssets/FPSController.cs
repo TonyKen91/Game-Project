@@ -30,7 +30,7 @@ public class FPSController : MonoBehaviour
     [SerializeField] private float m_maxFallVel;
     [SerializeField] private float m_boostMax = 3;
     [SerializeField] private float m_boostCoolDown = 0;
-    [SerializeField] private float m_boostCoolDownMax;
+    [SerializeField] private float m_boostCoolDownMax = 1;
     [SerializeField] private float m_boostAmount;
 
 
@@ -95,6 +95,7 @@ public class FPSController : MonoBehaviour
         m_curThirst = m_maxThirst;
         m_statTimer = 0.0f;
         m_boostAmount = m_boostMax;
+        m_boostCoolDown = m_boostCoolDownMax;
     }
 
     // Update is called once per frame
@@ -138,7 +139,7 @@ public class FPSController : MonoBehaviour
                 m_Airborne = true;
             }
 
-            if (m_boostAmount <= m_boostMax && m_boostAmount >= 0 && m_boostCoolDown >= m_boostCoolDownMax)
+            if (m_boostAmount <= m_boostMax && m_boostAmount >= 0)
             {
                 m_boostAmount += Time.fixedDeltaTime * 0.5f;
             }
@@ -155,34 +156,30 @@ public class FPSController : MonoBehaviour
 
             //apply gravity
             m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
-
-            
             
             //if boosting and boost amount is greater than 0 and the boost cool down is greater than or equal to the boost cool down maximum
-            if (m_boosting && m_boostAmount > 0 && m_boostCoolDown >= m_boostCoolDownMax)
+            if (m_boosting && m_boostAmount > 0 && (m_boostCoolDown >= m_boostCoolDownMax))
             {
                 m_boostAmount -= Time.fixedDeltaTime;
                 if (m_boostAmount < 0)
                 {
                     m_boostAmount = 0.0f;
+                    m_boostCoolDown = 0;
                 }
                 if (m_MoveDir.y <= 0)
                 {
-                    m_MoveDir.y += -m_MoveDir.y * 0.05f;
+                    m_MoveDir.y += -m_MoveDir.y * 0.1f;
                 }
                 m_MoveDir.y += m_BoostSpeed;
-                
-                m_boostCoolDown = 0;
             }
-            else if (m_boostAmount < m_boostMax && m_boostAmount >= 0 && m_boostCoolDown >= m_boostCoolDownMax)
+            else if (m_boostAmount < m_boostMax && m_boostAmount >= 0)
             {
                 m_boostAmount += Time.fixedDeltaTime * 0.5f;
 
                 //if not boosting
                 if (!m_boosting)
                 {
-                    //apply gravity
-                    m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
+
                     //if boost cool down is less than boost max
                     if (m_boostCoolDown < m_boostCoolDownMax)
                     {
@@ -253,7 +250,6 @@ public class FPSController : MonoBehaviour
         if (m_Airborne && m_boostCoolDown >= m_boostCoolDownMax)
         {
             m_boosting = Input.GetButton("Jump");
-            m_boostCoolDown = 1;
         }
 
         //if player was not on the ground last frame and is currently grounded
